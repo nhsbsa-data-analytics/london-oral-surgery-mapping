@@ -1,8 +1,5 @@
 .Rhistory
 *.rds
-endodontics_contractors.csv
-endodontics_data.csv
-imos_contractors.csv
-imos_data.csv
+data-raw
 rsconnect
 www.7z
