@@ -1,0 +1,38 @@
+@media only screen and (max-width: 768px) {
+  #controls {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  #table {
+    width: auto !important;
+  }
+  
+  nav {
+    display: none;
+  }
+}
+
+.tippy-box[data-theme~='nhs-blue'] {
+  background-color: #005EB8;
+  color: #FFFFFF;
+}
+
+.tippy-box[data-theme~='nhs-blue-sm'] {
+  background-color: #005EB8;
+  color: #FFFFFF;
+  font-size: 8pt;
+}
+
+.tippy-box[data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: #005EB8;
+}
+.tippy-box[data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: #005EB8;
+}
+.tippy-box[data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: #005EB8;
+}
+.tippy-box[data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: #005EB8;
+}
