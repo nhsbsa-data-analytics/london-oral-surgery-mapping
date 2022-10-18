@@ -91,7 +91,12 @@ prepare_data <- function(service) {
     drop_na(borough) %>% 
     group_by(month, lotnum) %>% 
     add_count() %>% 
-    mutate(total_waiting = total_waiting / n) %>%
+    mutate(
+      total_refs_in = total_refs_in / n,
+      total_refs_out = total_refs_out / n,
+      total_treated = total_treated / n,
+      total_waiting = total_waiting / n
+    ) %>%
     select(-n) %>% 
     select(month, lotnum, borough, everything())
 }
