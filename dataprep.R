@@ -9,7 +9,7 @@ library(rlang)
 
 # Data --------------------------------------------------------------------
 
-input_path <- "data-example"
+input_path <- "data-raw"
 
 # GIS data downloaded from 
 # http://data.london.gov.uk/dataset/statistical-gis-boundary-files-london
@@ -20,15 +20,14 @@ boroughs <- readOGR(
 ) %>% suppressWarnings()
 
 # Keep only the borough name column
-boroughs@data <- boroughs@data[,1] %>%
-  as.data.frame() %>% 
-  setNames(c("borough"))
+boroughs@data <- boroughs@data %>%
+  transmute(borough = NAME)
 
-# Transform to WGS884 reference system
-boroughs <- spTransform(boroughs, CRS("+init=epsg:4326"))
+# Transform to GPS reference system
+boroughs <- boroughs %>% spTransform(CRS("+init=epsg:4326"))
 
 # Find the edges of our map
-bounds <- bbox(boroughs)
+bounds <- boroughs@bbox
 
 # Get the contractor data and survey responses
 endo_contractors <- read.csv(
@@ -159,7 +158,8 @@ data <- bind_rows(endo, imos) %>%
       total_waiting,
       avg_wait_non_urgent
     )
-  )
+  ) %>% 
+  as.data.frame() # remove rowwise class
 
 months <- sort(unique(data$month), decreasing = TRUE) %m-% months(1)
 names(months) <- format(months, "%b %y")
