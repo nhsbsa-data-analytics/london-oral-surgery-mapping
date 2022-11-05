@@ -9,6 +9,8 @@ library(rlang)
 
 # Data --------------------------------------------------------------------
 
+input_path <- "data-raw"
+
 # GIS data downloaded from 
 # http://data.london.gov.uk/dataset/statistical-gis-boundary-files-london
 boroughs <- readOGR(
@@ -18,25 +20,28 @@ boroughs <- readOGR(
 ) %>% suppressWarnings()
 
 # Keep only the borough name column
-boroughs@data <- boroughs@data[,1] %>%
-  as.data.frame() %>% 
-  setNames(c("borough"))
+boroughs@data <- boroughs@data %>%
+  transmute(borough = NAME)
 
-# Transform to WGS884 reference system
-boroughs <- spTransform(boroughs, CRS("+init=epsg:4326"))
+# Transform to GPS reference system
+boroughs <- boroughs %>% spTransform(CRS("+init=epsg:4326"))
 
 # Find the edges of our map
-bounds <- bbox(boroughs)
+bounds <- boroughs@bbox
 
 # Get the contractor data and survey responses
 endo_contractors <- read.csv(
-  "data/endodontics_contractors.csv", fileEncoding = "UTF-8-BOM"
+  file.path(input_path, "endodontics_contractors.csv"), fileEncoding = "UTF-8-BOM"
 )
 imos_contractors <- read.csv(
-  "data/imos_contractors.csv", fileEncoding = "UTF-8-BOM"
+  file.path(input_path, "imos_contractors.csv"), fileEncoding = "UTF-8-BOM"
 )
-endo_data <- read.csv("data/endodontics_data.csv", fileEncoding = "UTF-8-BOM")
-imos_data <- read.csv("data/imos_data.csv", fileEncoding = "UTF-8-BOM")
+endo_data <- read.csv(
+  file.path(input_path, "endodontics_data.csv"), fileEncoding = "UTF-8-BOM"
+)
+imos_data <- read.csv(
+  file.path(input_path, "imos_data.csv"), fileEncoding = "UTF-8-BOM"
+)
 
 max_boroughs <- function(df) {
   df %>%
@@ -74,10 +79,10 @@ prepare_data <- function(service) {
       lotnum = as.character(LotNum),
       borough = Borough,
       service = Service,
-      total_refs_in = !!sym(names(select(., starts_with("Q1a.")))),
+      total_refs_in =  !!sym(names(select(., starts_with("Q1a.")))),
       total_refs_out = !!sym(names(select(., starts_with("Q1c.")))),
-      total_treated = !!sym(names(select(., starts_with("Q2a.")))),
-      total_waiting = !!sym(names(select(., starts_with("Q3a.")))),
+      total_treated =  !!sym(names(select(., starts_with("Q2a.")))),
+      total_waiting =  !!sym(names(select(., starts_with("Q3a.")))),
       avg_wait_non_urgent = !!sym(names(select(., starts_with("Q4a."))))
     ) %>% 
     separate(
@@ -153,7 +158,8 @@ data <- bind_rows(endo, imos) %>%
       total_waiting,
       avg_wait_non_urgent
     )
-  )
+  ) %>% 
+  as.data.frame() # remove rowwise class
 
 months <- sort(unique(data$month), decreasing = TRUE) %m-% months(1)
 names(months) <- format(months, "%b %y")

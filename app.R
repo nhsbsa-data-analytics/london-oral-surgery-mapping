@@ -147,13 +147,7 @@ server <- function(input, output, session){
         service == input$service
       )
     
-    # The RHS of the join is just the boroughs in the correct order for drawing
-    # on the map
-    boroughs@data <- boroughs@data %>%
-      select(borough) %>%
-      left_join(data, by = c("borough" = "borough"))
-    
-    boroughs
+    merge(boroughs, data)
   })
   
   # Due to use of leafletProxy below, this will only be called once
@@ -183,11 +177,11 @@ server <- function(input, output, session){
     data <- get_data()
     
     # Colour palette mapped to chosen map highlight column
-    pal <- colorNumeric("YlGn", data[[input$highlight]])
+    pal_map <- colorNumeric("YlGn", data[[input$highlight]])
     
     # Fix colour palette mapped to chosen map highlight column for legend; NAs 
     # are removed. See https://github.com/rstudio/leaflet/issues/615 for issue
-    palWithoutNA <- colorNumeric("YlGn", data[[input$highlight]], na.color=rgb(0,0,0,0))
+    pal_legend <- colorNumeric("YlGn", data[[input$highlight]], na.color=rgb(0,0,0,0))
     
     # If the data changes, the polygons are cleared and redrawn; however the map
     # is not redrawn
@@ -195,7 +189,7 @@ server <- function(input, output, session){
       clearShapes() %>%
       addPolygons(
         data = data,
-        fillColor = pal(data[[input$highlight]]),
+        fillColor = pal_map(data[[input$highlight]]),
         fillOpacity = 0.8,
         color ='black',
         dashArray ='3',
@@ -205,7 +199,7 @@ server <- function(input, output, session){
       clearControls() %>%
       addLegend(
         "bottomright", 
-        pal = palWithoutNA, 
+        pal = pal_legend, 
         values = ~data[[input$highlight]],
         title = ~unname(col_to_desc[input$highlight]),
         labFormat = labelFormat(),
