@@ -147,7 +147,7 @@ server <- function(input, output, session){
         service == input$service
       )
     
-    merge(boroughs, data)
+    sp::merge(boroughs, data)
   })
   
   # Due to use of leafletProxy below, this will only be called once
