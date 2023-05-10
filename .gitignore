@@ -2,4 +2,5 @@
 *.rds
 data-raw
 rsconnect
-www.7z
+*.zip
+*.7z
